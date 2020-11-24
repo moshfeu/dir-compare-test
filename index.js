@@ -5,20 +5,28 @@ var options = {
   compareSize: false, // compare only name by disabling size and content criteria
   compareContent: false,
   compareNameHandler: customNameCompare, // new name comparator used to ignore extensions
-  ignoreExtension: true, // supported by the custom name compare below
+  ignoreExtension: ['t', 'cc'], // supported by the custom name compare below
 };
 
+function extnameOnly(name) {
+  return path.extname(name).replace('.', '');
+}
+
 function customNameCompare(name1, name2, options) {
-  console.log(name1, name2);
-  if (options.ignoreCase) {
-    name1 = name1.toLowerCase();
-    name2 = name2.toLowerCase();
+    if (options.ignoreCase) {
+      name1 = name1.toLowerCase();
+      name2 = name2.toLowerCase();
   }
   if (options.ignoreExtension) {
-    name1 = path.basename(name1, path.extname(name1));
-    name2 = path.basename(name2, path.extname(name2));
+      if (options.ignoreExtension.includes(extnameOnly(name1))) {
+          name1 = path.basename(name1, path.extname(name1));
+      }
+      if (options.ignoreExtension.includes(extnameOnly(name2))) {
+          name2 = path.basename(name2, path.extname(name2));
+      }
   }
-  return name1 === name2 ? 0 : name1 > name2 ? 1 : -1;
+  const res = name1 === name2 ? 0 : name1 > name2 ? 1 : -1;
+  return res;
 }
 
 var path1 = 'folder1';
@@ -29,7 +37,8 @@ compare(path1, path2, options).then((res) => {
   if (!res.diffSet) {
     return;
   }
-  // res.diffSet.forEach((dif) =>
-  //   console.log(`${dif.name1} ${dif.name2} ${dif.state}`)
-  // );
+  console.log('RES:');
+  res.diffSet.forEach((dif) =>
+    console.log(`${dif.name1} ${dif.name2} ${dif.state}`)
+  );
 });
